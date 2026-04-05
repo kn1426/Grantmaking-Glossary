@@ -10,7 +10,10 @@ function loadEntries() {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
-      return JSON.parse(stored);
+      const parsed = JSON.parse(stored);
+      const storedIds = new Set(parsed.map((e) => e.id));
+      const newDefaults = DEFAULT_ENTRIES.filter((e) => !storedIds.has(e.id));
+      return newDefaults.length > 0 ? [...parsed, ...newDefaults] : parsed;
     }
   } catch (e) {
     console.error('Failed to load entries:', e);
