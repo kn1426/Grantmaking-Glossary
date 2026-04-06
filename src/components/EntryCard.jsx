@@ -1,9 +1,16 @@
-export default function EntryCard({ entry, categoryLabel, onEdit, onDelete }) {
+export default function EntryCard({ entry, categoryLabel, isFavorite, onToggleFavorite, onEdit, onDelete }) {
   return (
     <div className="entry-card">
       <div className="entry-card-header">
         <div className="entry-term">{entry.term}</div>
         <div className="entry-actions">
+          <button
+            className={`btn-favorite ${isFavorite ? 'active' : ''}`}
+            onClick={() => onToggleFavorite(entry.id)}
+            title={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+          >
+            {isFavorite ? '★' : '☆'}
+          </button>
           <button className="btn btn-sm btn-secondary" onClick={() => onEdit(entry)}>
             Edit
           </button>

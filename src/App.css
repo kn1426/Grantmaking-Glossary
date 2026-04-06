@@ -322,6 +322,27 @@ body {
   display: flex;
   gap: 0.4rem;
   flex-shrink: 0;
+  align-items: center;
+}
+
+.btn-favorite {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--color-border);
+  padding: 0.1rem 0.3rem;
+  transition: color 0.15s, transform 0.1s;
+}
+
+.btn-favorite:hover {
+  color: #f5a623;
+  transform: scale(1.15);
+}
+
+.btn-favorite.active {
+  color: #f5a623;
 }
 
 .entry-category-badge {

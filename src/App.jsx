@@ -5,6 +5,7 @@ import EntryForm from './components/EntryForm';
 import ConfirmDialog from './components/ConfirmDialog';
 
 const STORAGE_KEY = 'glossary-entries';
+const FAVORITES_KEY = 'glossary-favorites';
 
 function loadEntries() {
   try {
@@ -21,6 +22,16 @@ function loadEntries() {
   return DEFAULT_ENTRIES;
 }
 
+function loadFavorites() {
+  try {
+    const stored = localStorage.getItem(FAVORITES_KEY);
+    if (stored) return new Set(JSON.parse(stored));
+  } catch (e) {
+    console.error('Failed to load favorites:', e);
+  }
+  return new Set();
+}
+
 function saveEntries(entries) {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
@@ -29,22 +40,40 @@ function saveEntries(entries) {
   }
 }
 
+function saveFavorites(favorites) {
+  try {
+    localStorage.setItem(FAVORITES_KEY, JSON.stringify([...favorites]));
+  } catch (e) {
+    console.error('Failed to save favorites:', e);
+  }
+}
+
 export default function App() {
   const [entries, setEntries] = useState(loadEntries);
+  const [favorites, setFavorites] = useState(loadFavorites);
   const [activeCategory, setActiveCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [editingEntry, setEditingEntry] = useState(null);
   const [deleteConfirm, setDeleteConfirm] = useState(null);
 
-  useEffect(() => {
-    saveEntries(entries);
-  }, [entries]);
+  useEffect(() => { saveEntries(entries); }, [entries]);
+  useEffect(() => { saveFavorites(favorites); }, [favorites]);
+
+  const handleToggleFavorite = (id) => {
+    setFavorites((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
 
   const filteredEntries = useMemo(() => {
     let result = entries;
 
-    if (activeCategory !== 'all') {
+    if (activeCategory === 'favorites') {
+      result = result.filter((e) => favorites.has(e.id));
+    } else if (activeCategory !== 'all') {
       result = result.filter((e) => e.category === activeCategory);
     }
 
@@ -59,7 +88,7 @@ export default function App() {
     }
 
     return result.sort((a, b) => a.term.localeCompare(b.term));
-  }, [entries, activeCategory, searchQuery]);
+  }, [entries, favorites, activeCategory, searchQuery]);
 
   const categoryCounts = useMemo(() => {
     const counts = { all: entries.length };
@@ -75,37 +104,26 @@ export default function App() {
         prev.map((e) => (e.id === editingEntry.id ? { ...entryData, id: e.id } : e))
       );
     } else {
-      const newEntry = {
-        ...entryData,
-        id: 'custom-' + Date.now(),
-      };
+      const newEntry = { ...entryData, id: 'custom-' + Date.now() };
       setEntries((prev) => [...prev, newEntry]);
     }
     setShowForm(false);
     setEditingEntry(null);
   };
 
-  const handleEdit = (entry) => {
-    setEditingEntry(entry);
-    setShowForm(true);
-  };
-
-  const handleDelete = (entry) => {
-    setDeleteConfirm(entry);
-  };
-
+  const handleEdit = (entry) => { setEditingEntry(entry); setShowForm(true); };
+  const handleDelete = (entry) => { setDeleteConfirm(entry); };
   const confirmDelete = () => {
     setEntries((prev) => prev.filter((e) => e.id !== deleteConfirm.id));
+    setFavorites((prev) => { const next = new Set(prev); next.delete(deleteConfirm.id); return next; });
     setDeleteConfirm(null);
   };
-
-  const handleCloseForm = () => {
-    setShowForm(false);
-    setEditingEntry(null);
-  };
+  const handleCloseForm = () => { setShowForm(false); setEditingEntry(null); };
 
   const activeCategoryLabel =
-    activeCategory === 'all'
+    activeCategory === 'favorites'
+      ? 'Favorites'
+      : activeCategory === 'all'
       ? 'All Entries'
       : CATEGORIES.find((c) => c.id === activeCategory)?.label || 'All Entries';
 
@@ -119,6 +137,16 @@ export default function App() {
         </div>
         <nav className="sidebar-nav">
           <div className="sidebar-nav-label">Categories</div>
+
+          <button
+            className={`nav-item ${activeCategory === 'favorites' ? 'active' : ''}`}
+            onClick={() => setActiveCategory('favorites')}
+          >
+            <span className="nav-icon">⭐</span>
+            Favorites
+            <span className="nav-count">{favorites.size}</span>
+          </button>
+
           <button
             className={`nav-item ${activeCategory === 'all' ? 'active' : ''}`}
             onClick={() => setActiveCategory('all')}
@@ -127,6 +155,7 @@ export default function App() {
             All Entries
             <span className="nav-count">{categoryCounts.all}</span>
           </button>
+
           {CATEGORIES.map((cat) => (
             <button
               key={cat.id}
@@ -156,10 +185,7 @@ export default function App() {
           </div>
           <button
             className="btn btn-primary"
-            onClick={() => {
-              setEditingEntry(null);
-              setShowForm(true);
-            }}
+            onClick={() => { setEditingEntry(null); setShowForm(true); }}
           >
             + Add Entry
           </button>
@@ -180,15 +206,21 @@ export default function App() {
                 key={entry.id}
                 entry={entry}
                 categoryLabel={CATEGORIES.find((c) => c.id === entry.category)?.label}
+                isFavorite={favorites.has(entry.id)}
+                onToggleFavorite={handleToggleFavorite}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
               />
             ))
           ) : (
             <div className="empty-state">
-              <div className="empty-icon">📖</div>
+              <div className="empty-icon">
+                {activeCategory === 'favorites' ? '⭐' : '📖'}
+              </div>
               <p>
-                {searchQuery
+                {activeCategory === 'favorites'
+                  ? 'No favorites yet. Star entries to save them here.'
+                  : searchQuery
                   ? 'No entries match your search.'
                   : 'No entries in this category yet.'}
               </p>
