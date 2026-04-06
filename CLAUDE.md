@@ -64,6 +64,10 @@ npm run preview # Preview production build
 ## Design System
 **Always follow `DESIGN.md` in the project root for all UI changes.** This project uses the Notion design system — Inter font, warm neutrals, whisper borders, soft multi-layer shadows, Notion Blue (#0075de) as the sole accent.
 
+To switch to a different design system, fetch the desired DESIGN.md from:
+`https://raw.githubusercontent.com/VoltAgent/awesome-design-md/main/design-md/{brand}/DESIGN.md`
+Available brands (58 total): Stripe, Figma, Vercel, Claude, Apple, IBM, Tesla, Revolut, Wise, Intercom, Airbnb, Spotify, Supabase, Cursor, Linear, Raycast, BMW, Ferrari, and more.
+
 ## Design Notes
 - Professional/corporate aesthetic — muted navy sidebar, warm accents
 - Sidebar on left with category nav, search bar + content area on right
