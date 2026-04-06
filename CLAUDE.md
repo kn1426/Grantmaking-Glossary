@@ -61,6 +61,9 @@ npm run preview # Preview production build
 - **Example sentences**: Always written from a Program Officer's perspective — talking with or about grantees and their projects (e.g., "I asked the grantee...", "The grantee submitted...", "I'm scheduling a call to...")
 - **Tone**: Professional, practical, realistic work scenarios
 
+## Design System
+**Always follow `DESIGN.md` in the project root for all UI changes.** This project uses the Notion design system — Inter font, warm neutrals, whisper borders, soft multi-layer shadows, Notion Blue (#0075de) as the sole accent.
+
 ## Design Notes
 - Professional/corporate aesthetic — muted navy sidebar, warm accents
 - Sidebar on left with category nav, search bar + content area on right
